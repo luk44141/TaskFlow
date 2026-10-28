@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
   <title>TaskFlow · Gestor de tareas escolares</title>
   <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
   <div class="app">
@@ -19,23 +21,36 @@
         </div>
       </div>
 
-      <!-- Contadores -->
-      <section class="stats" aria-label="Resumen de tareas">
-        <div class="stat stat--pending">
-          <span class="stat__number" id="count-pending">0</span>
-          <span class="stat__label">Pendientes</span>
-        </div>
-        <div class="stat stat--done">
-          <span class="stat__number" id="count-completed">0</span>
-          <span class="stat__label">Completadas</span>
-        </div>
-      </section>
+      <button type="button" class="btn btn--ghost" id="theme-toggle">
+        <span id="theme-icon" aria-hidden="true">☀️</span>
+        <span id="theme-label">Modo claro</span>
+      </button>
     </header>
+
+    <!-- Panel de estadísticas -->
+    <section class="stats" aria-label="Estadísticas de tareas">
+      <div class="stat stat--total">
+        <span class="stat__number" id="count-total">0</span>
+        <span class="stat__label">Total</span>
+      </div>
+      <div class="stat stat--pending">
+        <span class="stat__number" id="count-pending">0</span>
+        <span class="stat__label">Pendientes</span>
+      </div>
+      <div class="stat stat--done">
+        <span class="stat__number" id="count-completed">0</span>
+        <span class="stat__label">Completadas</span>
+      </div>
+      <div class="stat stat--overdue">
+        <span class="stat__number" id="count-overdue">0</span>
+        <span class="stat__label">Vencidas</span>
+      </div>
+    </section>
 
     <main class="main">
 
-      <!-- Formulario -->
-      <section class="card" aria-labelledby="form-title">
+      <!-- Formulario (sirve para crear y para editar) -->
+      <section class="card" id="form-card" aria-labelledby="form-title">
         <h2 class="card__title" id="form-title">Nueva tarea</h2>
 
         <form id="task-form" class="form" novalidate>
@@ -48,48 +63,78 @@
           <div class="field">
             <label for="task-subject">Materia</label>
             <input type="text" id="task-subject" list="subjects" placeholder="Ej: Matemática" maxlength="30" autocomplete="off">
-            <datalist id="subjects">
-              <option value="Matemática">
-              <option value="Lengua">
-              <option value="Historia">
-              <option value="Geografía">
-              <option value="Biología">
-              <option value="Física">
-              <option value="Química">
-              <option value="Inglés">
-              <option value="Informática">
-            </datalist>
+            <datalist id="subjects"></datalist>
             <small class="field__error" id="error-subject" role="alert"></small>
           </div>
 
-          <div class="field">
-            <label for="task-date">Fecha de entrega</label>
-            <input type="date" id="task-date">
-            <small class="field__error" id="error-date" role="alert"></small>
+          <div class="field-row">
+            <div class="field">
+              <label for="task-priority">Prioridad</label>
+              <select id="task-priority">
+                <option value="high">Alta</option>
+                <option value="medium" selected>Media</option>
+                <option value="low">Baja</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="task-date">Fecha de entrega</label>
+              <input type="date" id="task-date">
+              <small class="field__error" id="error-date" role="alert"></small>
+            </div>
           </div>
 
-          <button type="submit" class="btn btn--primary">Agregar tarea</button>
+          <div class="form__actions">
+            <button type="submit" class="btn btn--primary" id="submit-button">Agregar tarea</button>
+            <button type="button" class="btn btn--ghost" id="cancel-edit" hidden>Cancelar</button>
+          </div>
         </form>
       </section>
 
       <!-- Listado -->
       <section class="card" aria-labelledby="list-title">
-        <div class="list-header">
-          <h2 class="card__title" id="list-title">Mis tareas</h2>
+        <h2 class="card__title" id="list-title">Mis tareas</h2>
+
+        <div class="toolbar">
+          <input type="search" id="search-input" class="search" placeholder="Buscar por título o materia…" aria-label="Buscar tareas por título o materia" autocomplete="off">
 
           <div class="filters" role="group" aria-label="Filtrar tareas por estado">
-            <button type="button" class="filter is-active" data-filter="all">Todas</button>
-            <button type="button" class="filter" data-filter="pending">Pendientes</button>
-            <button type="button" class="filter" data-filter="completed">Completadas</button>
+            <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">Todas</button>
+            <button type="button" class="filter" data-filter="pending" aria-pressed="false">Pendientes</button>
+            <button type="button" class="filter" data-filter="completed" aria-pressed="false">Completadas</button>
+            <button type="button" class="filter" data-filter="overdue" aria-pressed="false">Vencidas</button>
+          </div>
+
+          <div class="toolbar__selects">
+            <div class="field field--compact">
+              <label for="subject-filter">Materia</label>
+              <select id="subject-filter"></select>
+            </div>
+
+            <div class="field field--compact">
+              <label for="sort-select">Ordenar por</label>
+              <select id="sort-select">
+                <option value="date">Fecha de entrega</option>
+                <option value="priority">Prioridad</option>
+                <option value="created">Fecha de creación</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <ul class="task-list" id="task-list" aria-live="polite"></ul>
+        <ul class="task-list" id="task-list"></ul>
 
-        <p class="empty" id="empty-message" hidden></p>
+        <!-- Estado vacío / sin resultados -->
+        <div class="empty" id="empty-state" hidden>
+          <p class="empty__icon" aria-hidden="true">📭</p>
+          <p class="empty__title" id="empty-title"></p>
+          <p class="empty__text" id="empty-text"></p>
+          <button type="button" class="btn btn--ghost" id="clear-filters" hidden>Limpiar filtros</button>
+        </div>
 
         <div class="list-footer">
-          <button type="button" class="btn btn--ghost" id="clear-completed">Borrar completadas</button>
+          <p class="results-count" id="results-count"></p>
+          <button type="button" class="btn btn--danger-outline" id="clear-completed">Borrar completadas</button>
         </div>
       </section>
 
@@ -100,6 +145,7 @@
     </footer>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Avisos -->
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>
