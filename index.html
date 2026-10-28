@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow · Gestor de tareas escolares</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Encabezado -->
+    <header class="header">
+      <div class="brand">
+        <span class="brand__logo" aria-hidden="true">✓</span>
+        <div>
+          <h1 class="brand__title">TaskFlow</h1>
+          <p class="brand__subtitle">Organizá tus tareas escolares</p>
+        </div>
+      </div>
+
+      <!-- Contadores -->
+      <section class="stats" aria-label="Resumen de tareas">
+        <div class="stat stat--pending">
+          <span class="stat__number" id="count-pending">0</span>
+          <span class="stat__label">Pendientes</span>
+        </div>
+        <div class="stat stat--done">
+          <span class="stat__number" id="count-completed">0</span>
+          <span class="stat__label">Completadas</span>
+        </div>
+      </section>
+    </header>
+
+    <main class="main">
+
+      <!-- Formulario -->
+      <section class="card" aria-labelledby="form-title">
+        <h2 class="card__title" id="form-title">Nueva tarea</h2>
+
+        <form id="task-form" class="form" novalidate>
+          <div class="field">
+            <label for="task-title">Título</label>
+            <input type="text" id="task-title" placeholder="Ej: Resolver ejercicios de álgebra" maxlength="80" autocomplete="off">
+            <small class="field__error" id="error-title" role="alert"></small>
+          </div>
+
+          <div class="field">
+            <label for="task-subject">Materia</label>
+            <input type="text" id="task-subject" list="subjects" placeholder="Ej: Matemática" maxlength="30" autocomplete="off">
+            <datalist id="subjects">
+              <option value="Matemática">
+              <option value="Lengua">
+              <option value="Historia">
+              <option value="Geografía">
+              <option value="Biología">
+              <option value="Física">
+              <option value="Química">
+              <option value="Inglés">
+              <option value="Informática">
+            </datalist>
+            <small class="field__error" id="error-subject" role="alert"></small>
+          </div>
+
+          <div class="field">
+            <label for="task-date">Fecha de entrega</label>
+            <input type="date" id="task-date">
+            <small class="field__error" id="error-date" role="alert"></small>
+          </div>
+
+          <button type="submit" class="btn btn--primary">Agregar tarea</button>
+        </form>
+      </section>
+
+      <!-- Listado -->
+      <section class="card" aria-labelledby="list-title">
+        <div class="list-header">
+          <h2 class="card__title" id="list-title">Mis tareas</h2>
+
+          <div class="filters" role="group" aria-label="Filtrar tareas por estado">
+            <button type="button" class="filter is-active" data-filter="all">Todas</button>
+            <button type="button" class="filter" data-filter="pending">Pendientes</button>
+            <button type="button" class="filter" data-filter="completed">Completadas</button>
+          </div>
+        </div>
+
+        <ul class="task-list" id="task-list" aria-live="polite"></ul>
+
+        <p class="empty" id="empty-message" hidden></p>
+
+        <div class="list-footer">
+          <button type="button" class="btn btn--ghost" id="clear-completed">Borrar completadas</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <p>TaskFlow · Proyecto escolar · Tus datos se guardan en este navegador</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
